@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Forecast - Price Prediction{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="mb-3">
+                    <i class="bi bi-graph-up"></i> 30-Day Price Forecast
+                </h2>
+                <p class="text-muted mb-0">
+                    Compare ARIMA and LSTM model predictions for selected assets. Both models are trained on historical data
+                    and forecast the next 30 days of closing prices.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Asset Selection -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" action="/forecast" class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <label for="assetSelect" class="form-label fw-bold">
+                            <i class="bi bi-filter"></i> Select Asset:
+                        </label>
+                    </div>
+                    <div class="col-auto">
+                        <select class="form-select" id="assetSelect" name="asset" onchange="this.form.submit()">
+                            {% for asset in asset_list %}
+                            <option value="{{ asset }}" {% if selected_asset == asset %}selected{% endif %}>
+                                {{ asset }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-arrow-clockwise"></i> Update Forecast
+                        </button>
+                    </div>
+                    {% if selected_asset %}
+                    <div class="col-auto ms-auto">
+                        <a href="/download_forecast?asset={{ selected_asset }}" class="btn btn-success">
+                            <i class="bi bi-download"></i> Download CSV
+                        </a>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if error %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> {{ error }}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if selected_asset and plot_forecast %}
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="loading" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Training models and generating forecasts...</p>
+</div>
+
+<!-- Forecast Plot -->
+<div class="row mb-4" id="forecastContent">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-graph-up"></i> Price Forecast: {{ selected_asset }}
+            </div>
+            <div class="card-body">
+                <div class="plot-container">
+                    {{ plot_forecast | safe }}
+                </div>
+                <div class="alert alert-info mt-3">
+                    <strong><i class="bi bi-info-circle"></i> How to Read This Chart:</strong>
+                    <ul class="mb-0">
+                        <li><strong>Blue Line:</strong> Historical closing prices (last 180 days)</li>
+                        <li><strong>Red Dashed Line:</strong> ARIMA model 30-day forecast</li>
+                        <li><strong>Green Dotted Line:</strong> LSTM model 30-day forecast</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Performance Metrics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clipboard-data"></i> Model Performance Metrics
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    These metrics evaluate model accuracy on the test set (20% of historical data):
+                </p>
+                <div class="table-responsive">
+                    {{ metrics_table | safe }}
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h6 class="text-muted">MAE</h6>
+                                <p class="small mb-0">Mean Absolute Error - Average prediction error in dollars</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h6 class="text-muted">RMSE</h6>
+                                <p class="small mb-0">Root Mean Square Error - Penalizes larger errors more heavily</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h6 class="text-muted">MAPE</h6>
+                                <p class="small mb-0">Mean Absolute Percentage Error - Error as percentage of actual value</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Comparison -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-graph-down"></i> ARIMA Model
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Auto-Regressive Integrated Moving Average</h5>
+                <p class="card-text">
+                    <strong>Strengths:</strong>
+                </p>
+                <ul>
+                    <li>Good for linear trends and patterns</li>
+                    <li>Fast training and prediction</li>
+                    <li>Interpretable parameters</li>
+                    <li>Works well with stationary time series</li>
+                </ul>
+                <p class="card-text">
+                    <strong>Limitations:</strong>
+                </p>
+                <ul>
+                    <li>Assumes linear relationships</li>
+                    <li>May struggle with complex patterns</li>
+                    <li>Sensitive to outliers</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-graph-up"></i> LSTM Model
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Long Short-Term Memory Neural Network</h5>
+                <p class="card-text">
+                    <strong>Strengths:</strong>
+                </p>
+                <ul>
+                    <li>Captures non-linear patterns</li>
+                    <li>Learns long-term dependencies</li>
+                    <li>Adapts to complex data</li>
+                    <li>Good for volatile markets</li>
+                </ul>
+                <p class="card-text">
+                    <strong>Limitations:</strong>
+                </p>
+                <ul>
+                    <li>Requires more training data</li>
+                    <li>Longer training time</li>
+                    <li>Risk of overfitting</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning">
+                <i class="bi bi-exclamation-triangle"></i> Important Disclaimer
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong>These forecasts are for educational purposes only and should not be used for actual trading decisions.</strong>
+                </p>
+                <ul class="mb-0">
+                    <li>Financial markets are influenced by many unpredictable factors</li>
+                    <li>Past performance does not guarantee future results</li>
+                    <li>Always conduct thorough research before making investment decisions</li>
+                    <li>Consider consulting with a licensed financial advisor</li>
+                    <li>Model accuracy can vary significantly depending on market conditions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Please select an asset from the dropdown above to view forecasts.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Navigation Buttons -->
+<div class="row mb-4">
+    <div class="col-12 text-center">
+        <a href="/eda" class="btn btn-secondary btn-custom me-2">
+            <i class="bi bi-arrow-left"></i> Back to EDA
+        </a>
+        <a href="/compare" class="btn btn-primary btn-custom">
+            Next: Compare Models <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show loading indicator when form is submitted
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const forecastContent = document.getElementById('forecastContent');
+        
+        if (form && loadingIndicator) {
+            form.addEventListener('submit', function() {
+                if (forecastContent) {
+                    forecastContent.style.display = 'none';
+                }
+                loadingIndicator.style.display = 'block';
+            });
+        }
+    });
+</script>
+{% endblock %}

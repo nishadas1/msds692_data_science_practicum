@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Compare Models - Performance Analysis{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="mb-3">
+                    <i class="bi bi-diagram-3"></i> Model Performance Comparison
+                </h2>
+                <p class="text-muted mb-0">
+                    Comprehensive comparison of ARIMA vs LSTM model performance across all assets.
+                    Lower metric values indicate better prediction accuracy.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if error %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> {{ error }}
+        </div>
+    </div>
+</div>
+{% else %}
+
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="loading" style="{% if plot_comparison %}display: none;{% endif %}">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-3">Training models for all assets... This may take a few minutes.</p>
+    <div class="progress" style="width: 300px; margin: 20px auto;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+    </div>
+</div>
+
+{% if summary %}
+<!-- Summary Statistics -->
+<div class="row mb-4" id="comparisonContent">
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card border-danger">
+            <div class="icon text-danger">
+                <i class="bi bi-graph-down"></i>
+            </div>
+            <div class="value text-danger">{{ summary.arima_wins }}</div>
+            <div class="label">ARIMA Wins</div>
+            <p class="text-muted small mt-2">Assets where ARIMA performed better</p>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card border-success">
+            <div class="icon text-success">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="value text-success">{{ summary.lstm_wins }}</div>
+            <div class="label">LSTM Wins</div>
+            <p class="text-muted small mt-2">Assets where LSTM performed better</p>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card border-primary">
+            <div class="icon text-primary">
+                <i class="bi bi-pie-chart"></i>
+            </div>
+            <div class="value text-primary">{{ summary.total_assets }}</div>
+            <div class="label">Total Assets</div>
+            <p class="text-muted small mt-2">Compared in this analysis</p>
+        </div>
+    </div>
+</div>
+
+<!-- Average Performance -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-bar-chart"></i> Average MAE Across All Assets
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6 mb-3">
+                        <h3 class="text-danger">ARIMA</h3>
+                        <h2 class="display-4">${{ summary.avg_arima_mae }}</h2>
+                        <p class="text-muted">Average Mean Absolute Error</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h3 class="text-success">LSTM</h3>
+                        <h2 class="display-4">${{ summary.avg_lstm_mae }}</h2>
+                        <p class="text-muted">Average Mean Absolute Error</p>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-3">
+                    <strong><i class="bi bi-info-circle"></i> Interpretation:</strong>
+                    {% if summary.avg_arima_mae < summary.avg_lstm_mae %}
+                    ARIMA shows better average performance across all assets with a lower average MAE.
+                    This suggests ARIMA is more reliable for these particular datasets.
+                    {% else %}
+                    LSTM shows better average performance across all assets with a lower average MAE.
+                    This indicates LSTM is better at capturing complex patterns in these datasets.
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Comparison Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-graph-up"></i> Model Performance Metrics Comparison
+            </div>
+            <div class="card-body">
+                {% if plot_comparison %}
+                <div class="plot-container">
+                    {{ plot_comparison | safe }}
+                </div>
+                <div class="alert alert-info mt-3">
+                    <strong><i class="bi bi-lightbulb"></i> Key Insights:</strong>
+                    <ul class="mb-0">
+                        <li><strong>MAE (Mean Absolute Error):</strong> Average magnitude of prediction errors</li>
+                        <li><strong>RMSE (Root Mean Square Error):</strong> Gives more weight to larger errors</li>
+                        <li><strong>MAPE (Mean Absolute Percentage Error):</strong> Error relative to actual values</li>
+                        <li><strong>Lower values are better</strong> - indicates more accurate predictions</li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Metrics Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-table"></i> Detailed Performance Metrics
+            </div>
+            <div class="card-body">
+                {% if metrics_table %}
+                <div class="table-responsive">
+                    {{ metrics_table | safe }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analysis by Asset Type -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <i class="bi bi-currency-bitcoin"></i> Cryptocurrency Analysis
+            </div>
+            <div class="card-body">
+                <h5>Observations:</h5>
+                <ul>
+                    <li><strong>High Volatility:</strong> Crypto assets show larger MAE/RMSE values due to extreme price swings</li>
+                    <li><strong>LSTM Advantage:</strong> Neural networks often perform better on crypto due to non-linear patterns</li>
+                    <li><strong>Market Sentiment:</strong> Crypto heavily influenced by news and social media</li>
+                    <li><strong>Correlation Effects:</strong> Major cryptos (BTC, ETH) tend to move together</li>
+                </ul>
+                <div class="alert alert-warning mt-3">
+                    <strong>Recommendation:</strong> LSTM models may be preferable for cryptocurrency forecasting due to their ability to capture complex patterns.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-cash-stack"></i> Stock Market Analysis
+            </div>
+            <div class="card-body">
+                <h5>Observations:</h5>
+                <ul>
+                    <li><strong>Lower Volatility:</strong> Stock prices show more stable patterns with smaller errors</li>
+                    <li><strong>ARIMA Competitiveness:</strong> Traditional models work well with linear trends in stocks</li>
+                    <li><strong>Fundamental Drivers:</strong> Stock prices influenced by company earnings and economics</li>
+                    <li><strong>Sector Effects:</strong> Tech stocks (AAPL, MSFT) may behave differently than others</li>
+                </ul>
+                <div class="alert alert-info mt-3">
+                    <strong>Recommendation:</strong> Both ARIMA and LSTM can be effective for stocks. Consider ensemble methods for best results.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Conclusions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-check-circle"></i> Key Findings & Conclusions
+            </div>
+            <div class="card-body">
+                <h5 class="mb-3">Summary of Model Comparison:</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-danger"><i class="bi bi-graph-down"></i> ARIMA Model</h6>
+                        <p><strong>Best for:</strong></p>
+                        <ul>
+                            <li>Assets with linear trends</li>
+                            <li>Stable, low-volatility markets</li>
+                            <li>Short-term forecasting</li>
+                            <li>When interpretability is important</li>
+                        </ul>
+                        <p><strong>Won on {{ summary.arima_wins }} out of {{ summary.total_assets }} assets</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success"><i class="bi bi-graph-up"></i> LSTM Model</h6>
+                        <p><strong>Best for:</strong></p>
+                        <ul>
+                            <li>Complex, non-linear patterns</li>
+                            <li>High-volatility markets (crypto)</li>
+                            <li>Learning long-term dependencies</li>
+                            <li>When accuracy is paramount</li>
+                        </ul>
+                        <p><strong>Won on {{ summary.lstm_wins }} out of {{ summary.total_assets }} assets</strong></p>
+                    </div>
+                </div>
+                <hr>
+                <h6 class="mt-3"><i class="bi bi-lightbulb"></i> Final Recommendations:</h6>
+                <ol>
+                    <li><strong>Hybrid Approach:</strong> Consider ensemble models that combine both ARIMA and LSTM predictions</li>
+                    <li><strong>Asset-Specific:</strong> Choose model based on asset characteristics (volatility, trends)</li>
+                    <li><strong>Regular Retraining:</strong> Retrain models regularly as market conditions change</li>
+                    <li><strong>Risk Management:</strong> Use predictions as one input among many, not the sole decision factor</li>
+                    <li><strong>Validation:</strong> Always validate on out-of-sample data before deployment</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- Navigation Buttons -->
+<div class="row mb-4">
+    <div class="col-12 text-center">
+        <a href="/forecast" class="btn btn-secondary btn-custom me-2">
+            <i class="bi bi-arrow-left"></i> Back to Forecast
+        </a>
+        <a href="/" class="btn btn-primary btn-custom">
+            <i class="bi bi-house-door"></i> Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show loading indicator on page load if no data yet
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const comparisonContent = document.getElementById('comparisonContent');
+        
+        // Hide loading if content is present
+        if (comparisonContent) {
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}Exploratory Data Analysis - Financial Forecasting{% endblock %}
+
+{% block extra_css %}
+<style>
+    .eda-hero {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+        color: white;
+        padding: 3rem 0;
+        margin: -2rem -15px 2rem;
+        border-radius: 0 0 24px 24px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .insight-box {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-left: 4px solid #667eea;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-top: 1.5rem;
+    }
+    
+    .insight-box h5 {
+        color: #667eea;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .insight-box ul {
+        margin-bottom: 0;
+        padding-left: 1.5rem;
+    }
+    
+    .insight-box li {
+        margin-bottom: 0.5rem;
+        color: #2d3748;
+    }
+    
+    .chart-section {
+        margin-bottom: 2rem;
+    }
+    
+    .chart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .chart-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+    }
+    
+    .chart-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .key-findings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+    
+    .finding-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        transition: all 0.3s ease;
+        border-top: 4px solid transparent;
+    }
+    
+    .finding-card.crypto {
+        border-top-color: #fa709a;
+    }
+    
+    .finding-card.stock {
+        border-top-color: #4facfe;
+    }
+    
+    .finding-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .finding-card h5 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+    }
+    
+    .finding-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .finding-card li {
+        padding: 0.5rem 0;
+        padding-left: 1.75rem;
+        position: relative;
+        line-height: 1.6;
+    }
+    
+    .finding-card li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #4facfe;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .finding-card.crypto li:before {
+        color: #fa709a;
+    }
+    
+    .filter-section {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        margin-bottom: 2rem;
+    }
+    
+    .nav-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 3rem;
+        flex-wrap: wrap;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="eda-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">
+                    <i class="bi bi-bar-chart-fill"></i> Exploratory Data Analysis
+                </h1>
+                <p class="lead mb-0">
+                    Deep dive into price trends, volatility patterns, return distributions, and correlations between crypto and stock assets
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Asset Filter Section -->
+<div class="filter-section">
+    <form method="GET" action="/eda" class="row g-3 align-items-center">
+        <div class="col-12">
+            <p class="mb-0 text-muted">
+                <i class="bi bi-info-circle"></i> Viewing comprehensive analysis across all assets. Charts below show historical trends and patterns from 2020-2025.
+            </p>
+        </div>
+    </form>
+</div>
+
+<!-- Section 1: Closing Price Trends -->
+<div class="chart-section">
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span>
+                <i class="bi bi-graph-up"></i> Closing Price Trends (Crypto vs Stocks)
+            </span>
+            <span class="badge bg-light text-dark">2020-2025</span>
+        </div>
+        <div class="card-body p-4">
+            <div class="chart-container">
+                <img src="{{ url_for('static', filename='images/closing_price_trends.png') }}" 
+                     alt="Closing Price Trends" 
+                     class="img-fluid"
+                     style="width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2: Daily Returns Distribution -->
+<div class="chart-section">
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span>
+                <i class="bi bi-bar-chart-line-fill"></i> Distribution of Daily Returns
+            </span>
+            <span class="badge" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                Volatility Analysis
+            </span>
+        </div>
+        <div class="card-body p-4">
+            <div class="chart-container">
+                <img src="{{ url_for('static', filename='images/daily_returns_distribution.png') }}" 
+                     alt="Distribution of Daily Returns" 
+                     class="img-fluid"
+                     style="width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 3: Volatility Analysis -->
+<div class="chart-section">
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span>
+                <i class="bi bi-activity"></i> 30-Day Rolling Volatility (Crypto vs Stocks)
+            </span>
+            <span class="badge" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                Risk Metric
+            </span>
+        </div>
+        <div class="card-body p-4">
+            <div class="chart-container">
+                <img src="{{ url_for('static', filename='images/rolling_volatility.png') }}" 
+                     alt="30-Day Rolling Volatility" 
+                     class="img-fluid"
+                     style="width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 4: Correlation Heatmap -->
+<div class="chart-section">
+    <div class="card">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span>
+                <i class="bi bi-grid-3x3-gap-fill"></i> Correlation of Daily Returns (Crypto vs Stocks)
+            </span>
+            <span class="badge" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #2d3748;">
+                Portfolio Insights
+            </span>
+        </div>
+        <div class="card-body p-4">
+            <div class="chart-container text-center">
+                <img src="{{ url_for('static', filename='images/correlation_heatmap.png') }}" 
+                     alt="Correlation Heatmap" 
+                     class="img-fluid"
+                     style="max-width: 700px; width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+            
+            <div class="insight-box">
+                <h5><i class="bi bi-stars"></i> Key Insights:</h5>
+                <ul>
+                    <li><strong>High Crypto Correlation:</strong> Cryptocurrencies often show high correlation with each other (0.7-0.9), moving in similar directions</li>
+                    <li><strong>Stock Independence:</strong> Traditional stocks tend to move independently of crypto assets, showing lower correlation (0.2-0.4)</li>
+                    <li><strong>Diversification Benefits:</strong> Combining low-correlation assets reduces portfolio risk and improves risk-adjusted returns</li>
+                    <li><strong>Market Dynamics:</strong> Correlation patterns change over time, especially during market stress periods</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Findings Section -->
+<div class="chart-section">
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-clipboard-data"></i> Key Findings from Exploratory Analysis
+        </div>
+        <div class="card-body p-4">
+            <div class="key-findings-grid">
+                <!-- Cryptocurrency Findings -->
+                <div class="finding-card crypto">
+                    <h5>
+                        <i class="bi bi-currency-bitcoin"></i> Cryptocurrencies
+                    </h5>
+                    <ul>
+                        <li>Exhibit significantly higher volatility compared to traditional stocks</li>
+                        <li>Strong correlation between major crypto assets (BTC, ETH, BNB > 0.7)</li>
+                        <li>Experienced substantial price appreciation during 2020-2021 bull run</li>
+                        <li>More susceptible to market sentiment, news, and regulatory changes</li>
+                        <li>Higher risk-reward profile suitable for aggressive investors</li>
+                        <li>24/7 trading with no market holidays</li>
+                    </ul>
+                </div>
+                
+                <!-- Stock Findings -->
+                <div class="finding-card stock">
+                    <h5>
+                        <i class="bi bi-graph-up-arrow"></i> Stocks
+                    </h5>
+                    <ul>
+                        <li>Lower volatility with more stable and predictable price movements</li>
+                        <li>Weaker correlation with cryptocurrency markets (0.2-0.4)</li>
+                        <li>Influenced by company fundamentals, earnings, and economic indicators</li>
+                        <li>More suitable for risk-averse and long-term investors</li>
+                        <li>Provide dividends and ownership in established companies</li>
+                        <li>Regulated markets with investor protections</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Investment Implications -->
+            <div class="mt-4 p-4" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border-radius: 12px;">
+                <h5 class="mb-3">
+                    <i class="bi bi-briefcase-fill"></i> Portfolio Implications
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>✓ Diversification Strategy:</strong></p>
+                        <p class="mb-3">Combining crypto and stocks can reduce overall portfolio volatility while maintaining growth potential.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>✓ Risk Management:</strong></p>
+                        <p class="mb-3">Low correlation between asset classes provides natural hedging and downside protection.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="nav-buttons">
+    <a href="/" class="btn btn-secondary btn-lg">
+        <i class="bi bi-house-door-fill"></i> Back to Home
+    </a>
+    <a href="/forecast" class="btn btn-primary btn-lg">
+        View Forecasts <i class="bi bi-arrow-right-circle-fill"></i>
+    </a>
+    <a href="/compare" class="btn btn-success btn-lg">
+        Compare Models <i class="bi bi-diagram-3-fill"></i>
+    </a>
+</div>
+{% endblock %}

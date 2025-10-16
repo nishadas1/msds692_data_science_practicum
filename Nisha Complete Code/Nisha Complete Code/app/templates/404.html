@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+        <h1 class="error-title">404</h1>
+        <h2 class="error-subtitle">Page Not Found</h2>
+        <p class="error-message">Sorry, the page you're looking for doesn't exist.</p>
+        <div class="error-actions">
+            <a href="{{ url_for('home') }}" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-container {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.error-content {
+    text-align: center;
+    max-width: 600px;
+}
+
+.error-icon {
+    display: inline-block;
+    margin-bottom: 2rem;
+}
+
+.error-icon svg {
+    width: 100px;
+    height: 100px;
+    color: #ff6b6b;
+    animation: bounce 2s infinite;
+}
+
+.error-title {
+    font-size: 8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    line-height: 1;
+}
+
+.error-subtitle {
+    font-size: 2rem;
+    color: #2d3748;
+    margin: 1rem 0;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: #718096;
+    margin: 1.5rem 0 2.5rem;
+}
+
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.error-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+</style>
+{% endblock %}
