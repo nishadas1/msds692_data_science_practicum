@@ -14,18 +14,6 @@ A comprehensive web-based financial forecasting application that compares crypto
 - **Performance Metrics**: Detailed model evaluation with MAE, RMSE, and MAPE
 - **Interactive Visualizations**: Built with Plotly for rich, interactive charts
 
-## 📋 Table of Contents
-
-- [Features](#-features)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Project Structure](#-project-structure)
-- [Usage](#-usage)
-- [Data](#-data)
-- [Models](#-models)
-- [API Endpoints](#-api-endpoints)
-- [Configuration](#-configuration)
-
 ## 🚀 Installation
 
 ### Prerequisites
